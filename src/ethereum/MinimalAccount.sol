@@ -36,17 +36,17 @@ contract MinimalAccount is IAccount,Ownable {
     }
 
     modifier requiredFromEntryPointOrOwner(){
-        if(msg.sender != address(i_entryPoint) && msg.sender != Owner()){
+        if(msg.sender != address(i_entryPoint) && msg.sender != owner()){
             revert MinimalAccount__NotFromEntryPointOrOwner();
         }
         _;
     }
 
     /*/////////////////////////////////////////////////////////////// 
-                              CONSTRUCTOR    
+                              functions    
     ////////////////////////////////////////////////////////////////*/
 
-    constructor(address entryPoint) ownable(msg.sender) {
+    constructor(address entryPoint) Ownable(msg.sender) {
         i_entryPoint = IEntryPoint(entryPoint);
     }
 
@@ -78,14 +78,14 @@ contract MinimalAccount is IAccount,Ownable {
     function _validateSignature(PackedUserOperation calldata userOp, bytes32 userOpHash) internal view returns(uint256 validationData){
         bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(userOpHash);
         address signer = ECDSA.recover(ethSignedMessageHash,userOp.signature);
-        if(signer != Owner()){
+        if(signer != owner()){
             return SIG_VALIDATION_FAILED;
         }
         return SIG_VALIDATION_SUCCESS;
     }
     function _payPrefund(uint256 missingAccountFunds) internal{
         if(missingAccountFunds != 0){
-            (bool success,) = payable(msg.sender).call{value: missingAccountFunds,gas: type(uint256),max}("");
+            (bool success,) = payable(msg.sender).call{value: missingAccountFunds,gas: type(uint256).max}("");
             (success);
         }
     }
