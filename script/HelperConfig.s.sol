@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.24;
 
-import {Script} from "forge-std/Script.sol";
+import {Script, console2} from "forge-std/Script.sol";
+import {EntryPoint} from "lib/account-abstraction/contracts/core/EntryPoint.sol";
 
-
-contract HelperConfig is Script{
+contract HelperConfig is Script {
     error HelperConfig__InvalidChainId();
 
-    struct NetworkConfig{
+    struct NetworkConfig {
         address entryPoint; //0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789
         // address usdc;
         address account;
@@ -20,42 +20,45 @@ contract HelperConfig is Script{
     address constant BURNER_WALLET = 0xbf2B63cCeE4d24F63c138b6a9b82ef14f6793779;
     address constant FOUNDRY_DEFAULT_WALLET = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
 
-
     NetworkConfig public localNetworkConfig;
     mapping(uint256 => NetworkConfig) public networkConfigs;
 
-    constructor(){
+    constructor() {
         networkConfigs[ETH_SEPOLIA_CHAIN_ID] = getEthSepoliaConfig();
     }
 
-    function getConfig() public returns(NetworkConfig memory){
+    function getConfig() public returns (NetworkConfig memory) {
         return getConfigByChainId(block.chainid);
     }
 
-    function getConfigByChainId(uint256 chainId) public  returns(NetworkConfig memory){
-        if(chainId == LOCAL_CHAIN_ID){
+    function getConfigByChainId(uint256 chainId) public returns (NetworkConfig memory) {
+        if (chainId == LOCAL_CHAIN_ID) {
             return getOrCreateAnvilEthConfig();
-        }else if(networkConfigs[chainId].account != address(0)){
+        } else if (networkConfigs[chainId].account != address(0)) {
             return networkConfigs[chainId];
-        }else{
+        } else {
             revert HelperConfig__InvalidChainId();
         }
     }
 
-    function getEthSepoliaConfig() public pure returns(NetworkConfig memory){
-        return NetworkConfig({entryPoint: 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789,account: BURNER_WALLET});
+    function getEthSepoliaConfig() public pure returns (NetworkConfig memory) {
+        return NetworkConfig({entryPoint: 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789, account: BURNER_WALLET});
     }
 
-    function getZkSyncSepoliaConfig() public pure returns(NetworkConfig memory){
-        return NetworkConfig({entryPoint: address(0),account: BURNER_WALLET});
+    function getZkSyncSepoliaConfig() public pure returns (NetworkConfig memory) {
+        return NetworkConfig({entryPoint: address(0), account: BURNER_WALLET});
     }
 
-    function getOrCreateAnvilEthConfig() public  returns(NetworkConfig memory){
-        if(localNetworkConfig.account == address(0)){
+    function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) {
+        if (localNetworkConfig.account != address(0)) {
             return localNetworkConfig;
         }
 
-        return NetworkConfig({entryPoint: address(0),account: FOUNDRY_DEFAULT_WALLET});
-    }
+        console2.log("Deplying mock ....");
+        vm.startBroadcast(FOUNDRY_DEFAULT_WALLET);
+        EntryPoint entryPoint = new EntryPoint();
+        vm.stopBroadcast();
 
+        return NetworkConfig({entryPoint: address(0), account: FOUNDRY_DEFAULT_WALLET});
+    }
 }

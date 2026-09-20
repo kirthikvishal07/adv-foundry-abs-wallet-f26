@@ -9,90 +9,92 @@ import {ECDSA} from "lib/openzeppelin-contracts/contracts/utils/cryptography/ECD
 import {SIG_VALIDATION_FAILED, SIG_VALIDATION_SUCCESS} from "lib/account-abstraction/contracts/core/Helpers.sol";
 import {IEntryPoint} from "lib/account-abstraction/contracts/interfaces/IEntryPoint.sol";
 
-contract MinimalAccount is IAccount,Ownable {
-
-    /*/////////////////////////////////////////////////////////////// 
-                              ERRORS    
+contract MinimalAccount is IAccount, Ownable {
+    /*///////////////////////////////////////////////////////////////
+                              ERRORS
     ////////////////////////////////////////////////////////////////*/
     error MinimalAccount__NotFromEntryPoint();
     error MinimalAccount__NotFromEntryPointOrOwner();
     error MinimalAccount__CallFailed(bytes result);
 
-    /*/////////////////////////////////////////////////////////////// 
+    /*///////////////////////////////////////////////////////////////
                               state variables
     ////////////////////////////////////////////////////////////////*/
 
     IEntryPoint private immutable i_entryPoint;
 
-    /*/////////////////////////////////////////////////////////////// 
-                              modifier    
+    /*///////////////////////////////////////////////////////////////
+                              modifier
     ////////////////////////////////////////////////////////////////*/
 
-    modifier requiredFromEntryPoint(){
-        if(msg.sender != address(i_entryPoint)){
+    modifier requiredFromEntryPoint() {
+        if (msg.sender != address(i_entryPoint)) {
             revert MinimalAccount__NotFromEntryPoint();
         }
         _;
     }
 
-    modifier requiredFromEntryPointOrOwner(){
-        if(msg.sender != address(i_entryPoint) && msg.sender != owner()){
+    modifier requiredFromEntryPointOrOwner() {
+        if (msg.sender != address(i_entryPoint) && msg.sender != owner()) {
             revert MinimalAccount__NotFromEntryPointOrOwner();
         }
         _;
     }
 
-    /*/////////////////////////////////////////////////////////////// 
-                              functions    
+    /*///////////////////////////////////////////////////////////////
+                              functions
     ////////////////////////////////////////////////////////////////*/
 
     constructor(address entryPoint) Ownable(msg.sender) {
         i_entryPoint = IEntryPoint(entryPoint);
     }
 
+    receive() external payable {}
 
-    function receive() external payable{
-        
-    }
-
-    /*/////////////////////////////////////////////////////////////// 
+    /*///////////////////////////////////////////////////////////////
                               EXTERNAL FUNCTIONS
     ////////////////////////////////////////////////////////////////*/
 
-    function execute(address dest,uint256 value,bytes calldata functionData) external requiredFromEntryPointOrOwner{
-        (bool success,bytes memory result) = dest.call{value: value}(functionData);
-        if(!success){
+    function execute(address dest, uint256 value, bytes calldata functionData) external requiredFromEntryPointOrOwner {
+        (bool success, bytes memory result) = dest.call{value: value}(functionData);
+        if (!success) {
             revert MinimalAccount__CallFailed(result);
         }
     }
 
-    function validateUserOp(
-        PackedUserOperation calldata userOp,
-        bytes32 userOpHash,
-        uint256 missingAccountFunds
-    ) external requiredFromEntryPoint returns (uint256 validationData){
-       validationData = _validateSignature(userOp,userOpHash);
-       _payPrefund(missingAccountFunds);
+    function validateUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash, uint256 missingAccountFunds)
+        external
+        requiredFromEntryPoint
+        returns (uint256 validationData)
+    {
+        validationData = _validateSignature(userOp, userOpHash);
+        _payPrefund(missingAccountFunds);
     }
 
-    function _validateSignature(PackedUserOperation calldata userOp, bytes32 userOpHash) internal view returns(uint256 validationData){
+    function _validateSignature(PackedUserOperation calldata userOp, bytes32 userOpHash)
+        internal
+        view
+        returns (uint256 validationData)
+    {
         bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(userOpHash);
-        address signer = ECDSA.recover(ethSignedMessageHash,userOp.signature);
-        if(signer != owner()){
+        address signer = ECDSA.recover(ethSignedMessageHash, userOp.signature);
+        if (signer != owner()) {
             return SIG_VALIDATION_FAILED;
         }
         return SIG_VALIDATION_SUCCESS;
     }
-    function _payPrefund(uint256 missingAccountFunds) internal{
-        if(missingAccountFunds != 0){
-            (bool success,) = payable(msg.sender).call{value: missingAccountFunds,gas: type(uint256).max}("");
+
+    function _payPrefund(uint256 missingAccountFunds) internal {
+        if (missingAccountFunds != 0) {
+            (bool success,) = payable(msg.sender).call{value: missingAccountFunds, gas: type(uint256).max}("");
             (success);
         }
     }
-    /*/////////////////////////////////////////////////////////////// 
+
+    /*///////////////////////////////////////////////////////////////
                               GETTERS
     ////////////////////////////////////////////////////////////////*/
-    function getEntryPoint() external view returns (address){
+    function getEntryPoint() external view returns (address) {
         return address(i_entryPoint);
     }
 }
