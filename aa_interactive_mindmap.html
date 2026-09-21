@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Abstraction (ERC-4337) Visual Mindmap & Flow</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --border-color: #1f293d;
+      --accent-cyan: #06b6d4;
+      --accent-purple: #8b5cf6;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+    }
+    body {
+      background-color: var(--bg);
+      color: #e2e8f0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .glow-cyan { box-shadow: 0 0 20px rgba(6, 182, 212, 0.25); }
+    .glow-purple { box-shadow: 0 0 20px rgba(139, 92, 246, 0.25); }
+    .glow-emerald { box-shadow: 0 0 20px rgba(16, 185, 129, 0.25); }
+    .pulse-border {
+      animation: pulse-border-anim 2s infinite;
+    }
+    @keyframes pulse-border-anim {
+      0%, 100% { border-color: rgba(6, 182, 212, 0.7); box-shadow: 0 0 15px rgba(6, 182, 212, 0.4); }
+      50% { border-color: rgba(139, 92, 246, 0.7); box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); }
+    }
+    .node-card {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .node-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(139, 92, 246, 0.25);
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex flex-col">
+
+  <!-- Header -->
+  <header class="mb-6 border-b border-slate-800 pb-5">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+            ERC-4337 & zkSync
+          </span>
+          <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/30">
+            Foundry Deep Dive
+          </span>
+        </div>
+        <h1 class="text-2xl md:text-3xl font-bold mt-2 bg-gradient-to-r from-cyan-400 via-purple-300 to-indigo-400 bg-clip-text text-transparent">
+          Account Abstraction Interactive Architecture & Flow
+        </h1>
+        <p class="text-sm text-slate-400 mt-1">
+          Explore who executes what, cryptographic signing, EntryPoint loops, and how each contract connects.
+        </p>
+      </div>
+
+      <!-- Action Buttons & Navigation Tabs -->
+      <div class="flex items-center flex-wrap gap-3 self-start md:self-auto">
+        <!-- Direct Download Button -->
+        <button onclick="downloadHTML()" class="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-md shadow-emerald-950/50 hover:shadow-emerald-500/20 active:scale-95">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+          </svg>
+          Download File
+        </button>
+
+        <!-- Navigation Tabs -->
+        <div class="flex bg-slate-900/80 p-1 rounded-xl border border-slate-800">
+          <button onclick="switchTab('mindmap')" id="tab-mindmap" class="px-3.5 py-1.5 text-xs font-medium rounded-lg transition-all bg-purple-600 text-white shadow-sm">
+            🧠 Mindmap
+          </button>
+          <button onclick="switchTab('simulator')" id="tab-simulator" class="px-3.5 py-1.5 text-xs font-medium rounded-lg transition-all text-slate-400 hover:text-white">
+            ⚡ Simulator
+          </button>
+          <button onclick="switchTab('matrix')" id="tab-matrix" class="px-3.5 py-1.5 text-xs font-medium rounded-lg transition-all text-slate-400 hover:text-white">
+            👥 Matrix
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TAB 1: CONCEPT MINDMAP -->
+  <main id="view-mindmap" class="flex-1 flex flex-col gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Interactive Mindmap Tree (Left/Center 8 cols) -->
+      <div class="lg:col-span-8 flex flex-col gap-5">
+        
+        <!-- Center Root Hub -->
+        <div class="p-5 rounded-2xl bg-gradient-to-r from-purple-950/40 via-slate-900 to-cyan-950/40 border border-purple-500/40 shadow-xl relative overflow-hidden">
+          <div class="absolute -right-8 -top-8 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl"></div>
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center text-purple-300 font-bold text-lg">
+                4337
+              </div>
+              <div>
+                <h3 class="font-bold text-lg text-white">Account Abstraction (ERC-4337)</h3>
+                <p class="text-xs text-purple-300/80">Decoupling transaction validation & gas payment from EVM execution</p>
+              </div>
+            </div>
+            <span class="text-xs text-slate-400 bg-slate-800/80 px-3 py-1 rounded-full border border-slate-700">Click any card below for details</span>
+          </div>
+        </div>
+
+        <!-- 4 Mindmap Categories -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <!-- Branch 1: The Actors -->
+          <div class="node-card p-4 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 cursor-pointer" onclick="showDetails('actors')">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span> 1. The Key Actors
+              </span>
+              <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded">4 Entities</span>
+            </div>
+            <h4 class="font-semibold text-white text-base mb-1">Who signs, forwards & executes?</h4>
+            <p class="text-xs text-slate-400 mb-3">Wallet Owner, Bundler Node, EntryPoint Singleton, Target Protocol.</p>
+            <div class="flex flex-wrap gap-1.5 text-[11px]">
+              <span class="bg-cyan-950/60 text-cyan-300 border border-cyan-800/50 px-2 py-0.5 rounded">Owner (Key)</span>
+              <span class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded">Bundler (Mempool)</span>
+              <span class="bg-purple-950/60 text-purple-300 border border-purple-800/50 px-2 py-0.5 rounded">EntryPoint (L1)</span>
+              <span class="bg-emerald-950/60 text-emerald-300 border border-emerald-800/50 px-2 py-0.5 rounded">MinimalAccount</span>
+            </div>
+          </div>
+
+          <!-- Branch 2: The Signing Machine -->
+          <div class="node-card p-4 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-purple-500/50 cursor-pointer" onclick="showDetails('signing')">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-purple-400"></span> 2. Cryptographic Signing
+              </span>
+              <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded">EIP-191 & ECDSA</span>
+            </div>
+            <h4 class="font-semibold text-white text-base mb-1">How is the signature made?</h4>
+            <p class="text-xs text-slate-400 mb-3">Turning calldata into a 32-byte digest, signing with Anvil/Private key, packing (v, r, s).</p>
+            <div class="flex flex-wrap gap-1.5 text-[11px]">
+              <span class="bg-purple-950/60 text-purple-300 border border-purple-800/50 px-2 py-0.5 rounded">getUserOpHash()</span>
+              <span class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded">toEthSignedMessageHash()</span>
+              <span class="bg-cyan-950/60 text-cyan-300 border border-cyan-800/50 px-2 py-0.5 rounded">vm.sign(key, digest)</span>
+            </div>
+          </div>
+
+          <!-- Branch 3: The Validation Loop -->
+          <div class="node-card p-4 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 cursor-pointer" onclick="showDetails('validation')">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span> 3. The Validation Loop
+              </span>
+              <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded">Phase 1: Security & Gas</span>
+            </div>
+            <h4 class="font-semibold text-white text-base mb-1">validateUserOp() & Prefunding</h4>
+            <p class="text-xs text-slate-400 mb-3">Ensures Bundler won't lose gas fees, recovers signer via ECDSA, pays missingFunds.</p>
+            <div class="flex flex-wrap gap-1.5 text-[11px]">
+              <span class="bg-amber-950/60 text-amber-300 border border-amber-800/50 px-2 py-0.5 rounded">requiredFromEntryPoint</span>
+              <span class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded">_validateSignature</span>
+              <span class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded">_payPrefund(missingFunds)</span>
+            </div>
+          </div>
+
+          <!-- Branch 4: The Execution Loop -->
+          <div class="node-card p-4 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-emerald-500/50 cursor-pointer" onclick="showDetails('execution')">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span> 4. The Execution Loop
+              </span>
+              <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded">Phase 2: Target Action</span>
+            </div>
+            <h4 class="font-semibold text-white text-base mb-1">dest.call{value}(data)</h4>
+            <p class="text-xs text-slate-400 mb-3">Generic execution mechanism executing arbitrary calls (Mint, Swap, Transfer).</p>
+            <div class="flex flex-wrap gap-1.5 text-[11px]">
+              <span class="bg-emerald-950/60 text-emerald-300 border border-emerald-800/50 px-2 py-0.5 rounded">execute(dest, value, data)</span>
+              <span class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded">requiredFromEntryPointOrOwner</span>
+              <span class="bg-rose-950/60 text-rose-300 border border-rose-800/50 px-2 py-0.5 rounded">Low-Level .call</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Common Pitfalls & Setup Checklist -->
+        <div class="p-4 rounded-xl bg-slate-900/50 border border-slate-800">
+          <h4 class="text-sm font-semibold text-slate-300 mb-2 flex items-center gap-2">
+            <span class="text-amber-400">⚠️</span> Crucial Invariants (Why Tests Fail If Mismatched)
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-400">
+            <div class="p-2.5 rounded bg-slate-950/70 border border-slate-800">
+              <span class="text-white font-medium block mb-0.5">1. Signer Key == Wallet Owner</span>
+              If <code class="text-cyan-300">ANVIL_DEFAULT_KEY</code> signs, the recovered address is <code class="text-amber-300">0xf39Fd6...</code>. Ownership in <code class="text-purple-300">DeployMinimal</code> must be transferred to <code class="text-cyan-300">config.account</code>, NOT <code class="text-rose-400">msg.sender</code>!
+            </div>
+            <div class="p-2.5 rounded bg-slate-950/70 border border-slate-800">
+              <span class="text-white font-medium block mb-0.5">2. EntryPoint Initialization</span>
+              <code class="text-cyan-300">getOrCreateAnvilEthConfig()</code> must return <code class="text-emerald-300">address(entryPoint)</code>, not <code class="text-rose-400">address(0)</code>, and cache to <code class="text-purple-300">localNetworkConfig</code>.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Detail Panel (4 cols) -->
+      <div class="lg:col-span-4 flex flex-col">
+        <div id="detail-panel" class="flex-1 p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <span id="detail-tag" class="px-2 py-0.5 text-[10px] font-bold rounded uppercase bg-cyan-500/20 text-cyan-300">Inspector</span>
+              <h3 id="detail-title" class="font-bold text-white text-base">Select a Branch</h3>
+            </div>
+            <p id="detail-desc" class="text-xs text-slate-400 mb-4 leading-relaxed">
+              Click on any of the cards on the left to inspect the contract calls, mathematical hashing formulas, and Solidity code excerpts.
+            </p>
+            <div id="detail-code-box" class="hidden">
+              <span class="text-[11px] font-mono text-slate-400 block mb-1">Code Excerpt:</span>
+              <pre class="bg-slate-950 p-3 rounded-lg text-[11px] font-mono text-emerald-400 overflow-x-auto border border-slate-800/80 mb-3" id="detail-code"></pre>
+            </div>
+            <div id="detail-points" class="space-y-2 text-xs text-slate-300"></div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800/80 text-[11px] text-slate-500">
+            Smart Contract Wallet: MinimalAccount.sol (ERC-4337 v0.7)
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- TAB 2: STEP-BY-STEP FLOW SIMULATOR -->
+  <section id="view-simulator" class="hidden flex-1 flex flex-col gap-6">
+    <!-- Simulator Controls -->
+    <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <button onclick="prevStep()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white transition border border-slate-700">
+          ◀ Previous Step
+        </button>
+        <button onclick="nextStep()" class="px-4 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-xs font-semibold text-white transition shadow-lg shadow-cyan-900/30">
+          Next Step ▶
+        </button>
+        <button onclick="resetSim()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-400 transition">
+          Reset
+        </button>
+        <span class="text-xs text-slate-400 ml-2 font-mono">
+          Step <span id="current-step-num" class="text-cyan-400 font-bold">1</span> of 6
+        </span>
+      </div>
+      <div id="step-indicator" class="text-xs font-medium text-purple-300 bg-purple-950/40 border border-purple-800/40 px-3 py-1 rounded-full">
+        Phase: Off-Chain Encoding & Signing
+      </div>
+    </div>
+
+    <!-- Active Entities Interactive Canvas / Visual Highway -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      
+      <!-- Actor 1: Owner / Script -->
+      <div id="box-owner" class="p-4 rounded-xl bg-slate-900 border-2 border-slate-800 transition-all flex flex-col items-center text-center">
+        <div class="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-400/40 flex items-center justify-center text-xl mb-2">
+          ✍️
+        </div>
+        <h4 class="font-bold text-white text-sm">Account Owner</h4>
+        <span class="text-[11px] text-cyan-400 font-mono">ANVIL_KEY (0xf39F...)</span>
+        <p class="text-[11px] text-slate-400 mt-2">Signs UserOperation off-chain. Controls the wallet.</p>
+        <div id="owner-status" class="mt-3 text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-400">Idle</div>
+      </div>
+
+      <!-- Actor 2: Bundler -->
+      <div id="box-bundler" class="p-4 rounded-xl bg-slate-900 border-2 border-slate-800 transition-all flex flex-col items-center text-center">
+        <div class="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-400/40 flex items-center justify-center text-xl mb-2">
+          📦
+        </div>
+        <h4 class="font-bold text-white text-sm">Bundler Node</h4>
+        <span class="text-[11px] text-amber-400 font-mono">Alternative Mempool</span>
+        <p class="text-[11px] text-slate-400 mt-2">Packs Ops into a standard Ethereum transaction.</p>
+        <div id="bundler-status" class="mt-3 text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-400">Idle</div>
+      </div>
+
+      <!-- Actor 3: EntryPoint -->
+      <div id="box-entrypoint" class="p-4 rounded-xl bg-slate-900 border-2 border-slate-800 transition-all flex flex-col items-center text-center">
+        <div class="w-12 h-12 rounded-full bg-purple-500/10 border border-purple-400/40 flex items-center justify-center text-xl mb-2">
+          🏛️
+        </div>
+        <h4 class="font-bold text-white text-sm">EntryPoint (v0.7)</h4>
+        <span class="text-[11px] text-purple-400 font-mono">Singleton Contract</span>
+        <p class="text-[11px] text-slate-400 mt-2">Central coordinator. Runs validation & execution loops.</p>
+        <div id="entrypoint-status" class="mt-3 text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-400">Idle</div>
+      </div>
+
+      <!-- Actor 4: MinimalAccount & Target -->
+      <div id="box-account" class="p-4 rounded-xl bg-slate-900 border-2 border-slate-800 transition-all flex flex-col items-center text-center">
+        <div class="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-400/40 flex items-center justify-center text-xl mb-2">
+          🛡️
+        </div>
+        <h4 class="font-bold text-white text-sm">MinimalAccount</h4>
+        <span class="text-[11px] text-emerald-400 font-mono">Smart Contract Wallet</span>
+        <p class="text-[11px] text-slate-400 mt-2">Verifies ECDSA signature, pays prefund, and executes calls.</p>
+        <div id="account-status" class="mt-3 text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-400">Idle</div>
+      </div>
+
+    </div>
+
+    <!-- Active Step Narration & Code Details -->
+    <div class="p-5 rounded-xl bg-gradient-to-r from-slate-900 via-slate-900/90 to-slate-950 border border-slate-800 shadow-xl">
+      <div class="flex items-center gap-3 mb-2">
+        <span id="step-badge" class="px-2.5 py-0.5 rounded text-xs font-bold uppercase bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+          Step 1: Encode Instructions
+        </span>
+        <h3 id="step-headline" class="font-bold text-base text-white">Packaging the intent inside executeCallData</h3>
+      </div>
+      <p id="step-narrative" class="text-sm text-slate-300 mb-4 leading-relaxed">
+        The user wants to mint 1 USDC to the smart account. They encode <code>ERC20Mock.mint(...)</code> and wrap it into <code>MinimalAccount.execute(dest, value, funcData)</code>.
+      </p>
+      <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 font-mono text-xs text-cyan-300 overflow-x-auto" id="step-code-preview">
+bytes memory funcData = abi.encodeWithSelector(ERC20Mock.mint.selector, address(minimalAccount), AMOUNT);
+bytes memory executeCallData = abi.encodeWithSelector(MinimalAccount.execute.selector, dest, value, funcData);
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 3: WHO DOES WHAT? (RESPONSIBILITY MATRIX) -->
+  <section id="view-matrix" class="hidden flex-1 flex flex-col gap-5">
+    <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+      <h3 class="font-bold text-white text-base mb-1">Responsibility & Call Breakdown</h3>
+      <p class="text-xs text-slate-400">Clear map of who initiates, who signs, who validates, and who pays gas fees.</p>
+    </div>
+
+    <div class="overflow-x-auto rounded-xl border border-slate-800 shadow-xl">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr class="bg-slate-900 text-slate-300 border-b border-slate-800">
+            <th class="p-3 font-semibold">Actor / Component</th>
+            <th class="p-3 font-semibold">Key Role</th>
+            <th class="p-3 font-semibold">What It Calls</th>
+            <th class="p-3 font-semibold">Who Calls It</th>
+            <th class="p-3 font-semibold">Gas & Signing Responsibilities</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/60 bg-slate-900/30 text-slate-300">
+          <tr class="hover:bg-slate-800/30">
+            <td class="p-3 font-bold text-cyan-400 flex items-center gap-2">
+              <span>✍️</span> Wallet Owner (EOA)
+            </td>
+            <td class="p-3">Signs the user's intent off-chain.</td>
+            <td class="p-3 font-mono text-slate-400">Sends UserOp to Bundler</td>
+            <td class="p-3 font-mono text-slate-400">Initiates flow</td>
+            <td class="p-3">
+              <span class="text-emerald-400">Signs with Private Key</span>. Pays zero gas directly from personal EOA!
+            </td>
+          </tr>
+          <tr class="hover:bg-slate-800/30">
+            <td class="p-3 font-bold text-amber-400 flex items-center gap-2">
+              <span>📦</span> Bundler (Node)
+            </td>
+            <td class="p-3">Packages multiple UserOps into an L1 transaction.</td>
+            <td class="p-3 font-mono text-purple-400">EntryPoint.handleOps([userOp], beneficiary)</td>
+            <td class="p-3 font-mono text-slate-400">Receives from Alt-Mempool</td>
+            <td class="p-3">
+              Fronts the L1 gas upfront. Reimbursed by EntryPoint from prefund.
+            </td>
+          </tr>
+          <tr class="hover:bg-slate-800/30">
+            <td class="p-3 font-bold text-purple-400 flex items-center gap-2">
+              <span>🏛️</span> EntryPoint.sol
+            </td>
+            <td class="p-3">Trusted singleton orchestrator of ERC-4337.</td>
+            <td class="p-3 font-mono text-emerald-400">
+              1. account.validateUserOp(...)<br>
+              2. account.execute(...)
+            </td>
+            <td class="p-3 font-mono text-amber-400">Bundler Node</td>
+            <td class="p-3">
+              Collects gas prefund from account, computes gas used, pays bundler.
+            </td>
+          </tr>
+          <tr class="hover:bg-slate-800/30">
+            <td class="p-3 font-bold text-emerald-400 flex items-center gap-2">
+              <span>🛡️</span> MinimalAccount.sol
+            </td>
+            <td class="p-3">The user's actual Smart Contract Wallet on-chain.</td>
+            <td class="p-3 font-mono text-rose-400">
+              dest.call{value: value}(functionData)
+            </td>
+            <td class="p-3 font-mono text-purple-400">EntryPoint or Owner directly</td>
+            <td class="p-3">
+              Verifies <code class="text-cyan-300">ECDSA.recover(digest, sig) == owner</code>. Deposits ETH to prefund.
+            </td>
+          </tr>
+          <tr class="hover:bg-slate-800/30">
+            <td class="p-3 font-bold text-rose-400 flex items-center gap-2">
+              <span>🎯</span> Target (e.g. USDC Mock)
+            </td>
+            <td class="p-3">The final application destination contract.</td>
+            <td class="p-3 font-mono text-slate-400">Mints/Transfers tokens</td>
+            <td class="p-3 font-mono text-emerald-400">MinimalAccount</td>
+            <td class="p-3">
+              Receives <code class="text-slate-300">msg.sender = address(minimalAccount)</code>.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Script Logic -->
+  <script>
+    // Tab Switching
+    function switchTab(tab) {
+      document.getElementById('view-mindmap').classList.add('hidden');
+      document.getElementById('view-simulator').classList.add('hidden');
+      document.getElementById('view-matrix').classList.add('hidden');
+      
+      document.getElementById('tab-mindmap').className = 'px-3.5 py-1.5 text-xs font-medium rounded-lg transition-all text-slate-400 hover:text-white';
+      document.getElementById('tab-simulator').className = 'px-3.5 py-1.5 text-xs font-medium rounded-lg transition-all text-slate-400 hover:text-white';
+      document.getElementById('tab-matrix').className = 'px-3.5 py-1.5 text-xs font-medium rounded-lg transition-all text-slate-400 hover:text-white';
+
+      document.getElementById('view-' + tab).classList.remove('hidden');
+      document.getElementById('tab-' + tab).className = 'px-3.5 py-1.5 text-xs font-medium rounded-lg transition-all bg-purple-600 text-white shadow-sm';
+    }
+
+    // Direct Browser Download Function
+    function downloadHTML() {
+      const fullContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+      const blob = new Blob([fullContent], { type: "text/html;charset=utf-8" });
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = "account_abstraction_mindmap.html";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(downloadUrl);
+    }
+
+    // Detail Panel Content Data
+    const detailsData = {
+      actors: {
+        tag: "1. The Key Actors",
+        title: "Who Executes What in ERC-4337?",
+        desc: "Unlike standard transactions where an EOA signs and pays gas directly, ERC-4337 splits duties among 4 actors to achieve gas sponsorship and custom validation.",
+        code: `// 1. Owner signs UserOperation (Off-chain)
+(v, r, s) = vm.sign(ANVIL_DEFAULT_KEY, digest);
+
+// 2. Bundler sends transaction to EntryPoint
+IEntryPoint(entryPoint).handleOps([userOp], bundlerBeneficiary);
+
+// 3. EntryPoint asks MinimalAccount to validate & execute
+minimalAccount.validateUserOp(userOp, userOpHash, missingFunds);
+minimalAccount.execute(dest, value, functionData);`,
+        points: [
+          "• <b>Account Owner:</b> Holds the private key. Never pays gas directly; only signs off-chain UserOps.",
+          "• <b>Bundler:</b> An EVM node that packages user operations and pays the L1 gas upfront.",
+          "• <b>EntryPoint:</b> The audited, canonical singleton that coordinates validation, gas reimbursement, and execution.",
+          "• <b>MinimalAccount:</b> The actual smart contract wallet holding funds and executing transactions."
+        ]
+      },
+      signing: {
+        tag: "2. Cryptographic Signing",
+        title: "How the Digest is Created & Signed",
+        desc: "The signature is NOT computed directly on the calldata. It is computed over an EIP-191 digest combining the UserOperation, EntryPoint address, and chain ID for replay protection.",
+        code: `// Step 1: Pack unsigned data
+PackedUserOperation memory unsignedOp = _generateUnsignedUserOperation(...);
+
+// Step 2: EntryPoint hashes data + address(this) + block.chainid
+bytes32 userOpHash = IEntryPoint(entryPoint).getUserOpHash(unsignedOp);
+
+// Step 3: Convert to EIP-191 Ethereum Signed Message
+bytes32 digest = userOpHash.toEthSignedMessageHash();
+
+// Step 4: Sign with Private Key
+(uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
+userOp.signature = abi.encodePacked(r, s, v);`,
+        points: [
+          "• <b>Cross-Chain Replay Protection:</b> getUserOpHash binds the current block.chainid so a Sepolia signature cannot be used on Ethereum Mainnet.",
+          "• <b>Cross-EntryPoint Protection:</b> The EntryPoint address is baked into the hash.",
+          "• <b>ECDSA Recovery:</b> In MinimalAccount, ECDSA.recover(digest, sig) retrieves the exact address that signed it."
+        ]
+      },
+      validation: {
+        tag: "3. The Validation Loop",
+        title: "MinimalAccount.validateUserOp()",
+        desc: "Before any execution is allowed, the EntryPoint calls validateUserOp() to guarantee two things: valid signature, and that the Bundler will be paid for gas.",
+        code: `function validateUserOp(
+    PackedUserOperation calldata userOp,
+    bytes32 userOpHash,
+    uint256 missingAccountFunds
+) external requiredFromEntryPoint returns (uint256 validationData) {
+    validationData = _validateSignature(userOp, userOpHash);
+    _payPrefund(missingAccountFunds);
+}`,
+        points: [
+          "• <b>Access Control:</b> Only the official EntryPoint can call validateUserOp (gated by requiredFromEntryPoint modifier).",
+          "• <b>Signature Check:</b> Reconstructs toEthSignedMessageHash(userOpHash) and recovers the signer. Returns SIG_VALIDATION_SUCCESS (0) or SIG_VALIDATION_FAILED (1).",
+          "• <b>Gas Prefund:</b> If missingAccountFunds > 0, the account transfers ETH to the EntryPoint to cover gas fees."
+        ]
+      },
+      execution: {
+        tag: "4. The Execution Loop",
+        title: "MinimalAccount.execute()",
+        desc: "After validation succeeds, the EntryPoint initiates Phase 2 by calling MinimalAccount.execute(...) to trigger the real on-chain action.",
+        code: `function execute(
+    address dest,
+    uint256 value,
+    bytes calldata functionData
+) external requiredFromEntryPointOrOwner {
+    (bool success, bytes memory result) = dest.call{value: value}(functionData);
+    if (!success) {
+        revert MinimalAccount__CallFailed(result);
+    }
+}`,
+        points: [
+          "• <b>Universal Flexibility:</b> Using dest.call allows the wallet to call ANY contract (USDC, Uniswap, NFT mints).",
+          "• <b>Dual Access Control:</b> Allowed from either the EntryPoint (via UserOp) OR directly by the owner (normal EOA call).",
+          "• <b>Revert Bubbling:</b> Because low-level .call does not revert automatically, if (!success) revert MinimalAccount__CallFailed ensures failures are never swallowed."
+        ]
+      }
+    };
+
+    function showDetails(key) {
+      const data = detailsData[key];
+      document.getElementById('detail-tag').innerText = data.tag;
+      document.getElementById('detail-title').innerText = data.title;
+      document.getElementById('detail-desc').innerText = data.desc;
+      document.getElementById('detail-code').innerText = data.code;
+      document.getElementById('detail-code-box').classList.remove('hidden');
+
+      const pointsContainer = document.getElementById('detail-points');
+      pointsContainer.innerHTML = '';
+      data.points.forEach(pt => {
+        const div = document.createElement('div');
+        div.className = "p-2 rounded bg-slate-950/60 border border-slate-800/80 leading-relaxed";
+        div.innerHTML = pt;
+        pointsContainer.appendChild(div);
+      });
+    }
+
+    // Default load branch 1
+    showDetails('actors');
+
+    // Simulator Steps
+    let currentStep = 1;
+    const simSteps = [
+      {
+        num: 1,
+        phase: "Phase 1: Encoding the Intent",
+        badge: "Step 1: Encode Action",
+        headline: "User decides what to do: Mint 1 USDC",
+        narrative: "The account owner encodes the function call (ERC20Mock.mint) and wraps it inside MinimalAccount.execute(dest, value, data).",
+        activeBoxes: ['owner'],
+        statuses: { owner: "Encoding calldata", bundler: "Idle", entrypoint: "Idle", account: "Idle" },
+        code: `address dest = address(usdc);
+bytes memory functionData = abi.encodeWithSelector(ERC20Mock.mint.selector, address(minimalAccount), 1e18);
+bytes memory executeCallData = abi.encodeWithSelector(MinimalAccount.execute.selector, dest, 0, functionData);`
+      },
+      {
+        num: 2,
+        phase: "Phase 2: Off-Chain Signing",
+        badge: "Step 2: Sign UserOp",
+        headline: "Owner signs the 32-byte digest with ANVIL_DEFAULT_KEY",
+        narrative: "SendPackedUserOp assembles the PackedUserOperation, retrieves the hash from EntryPoint, and signs it. The signature (v, r, s) is attached.",
+        activeBoxes: ['owner'],
+        statuses: { owner: "✍️ Signed with 0xac09... (0xf39F...)", bundler: "Idle", entrypoint: "Provided getUserOpHash", account: "Idle" },
+        code: `bytes32 userOpHash = IEntryPoint(entryPoint).getUserOpHash(unsignedUserOp);
+bytes32 digest = userOpHash.toEthSignedMessageHash();
+(uint8 v, bytes32 r, bytes32 s) = vm.sign(ANVIL_DEFAULT_KEY, digest);
+userOp.signature = abi.encodePacked(r, s, v);`
+      },
+      {
+        num: 3,
+        phase: "Phase 3: Bundler Submits",
+        badge: "Step 3: Mempool to EntryPoint",
+        headline: "Bundler triggers handleOps() on EntryPoint",
+        narrative: "The bundler receives the signed UserOp, wraps it into an Ethereum transaction, and calls EntryPoint.handleOps(). The bundler pays the L1 gas upfront.",
+        activeBoxes: ['bundler', 'entrypoint'],
+        statuses: { owner: "Waiting", bundler: "🚀 Broadcasting handleOps()", entrypoint: "Received UserOp batch", account: "Idle" },
+        code: `// Sent by Bundler:
+IEntryPoint(entryPoint).handleOps([signedUserOp], bundlerBeneficiary);`
+      },
+      {
+        num: 4,
+        phase: "Phase 4: Validation Loop",
+        badge: "Step 4: Signature & Gas Check",
+        headline: "EntryPoint calls MinimalAccount.validateUserOp()",
+        narrative: "MinimalAccount recovers the signer using ECDSA.recover. It confirms the signer matches minimalAccount.owner() and deposits any missing gas prefund.",
+        activeBoxes: ['entrypoint', 'account'],
+        statuses: { owner: "Validated", bundler: "Waiting", entrypoint: "Validating...", account: "✅ Verified Signer & Paid Prefund" },
+        code: `// Inside MinimalAccount.sol:
+address signer = ECDSA.recover(ethSignedMessageHash, userOp.signature);
+require(signer == owner(), "Invalid signature");
+_payPrefund(missingAccountFunds); // Sends ETH to EntryPoint`
+      },
+      {
+        num: 5,
+        phase: "Phase 5: Execution Loop",
+        badge: "Step 5: Target Execution",
+        headline: "EntryPoint calls MinimalAccount.execute() -> USDC",
+        narrative: "Validation passed! Now EntryPoint instructs MinimalAccount to execute the target call. MinimalAccount performs a low-level dest.call to mint tokens.",
+        activeBoxes: ['entrypoint', 'account'],
+        statuses: { owner: "Done", bundler: "Waiting", entrypoint: "Calling execute()", account: "⚡ dest.call{value}(functionData)" },
+        code: `// Inside MinimalAccount.execute:
+(bool success, bytes memory result) = dest.call{value: value}(functionData);
+require(success, "Call Failed");
+// USDC.mint(minimalAccount, 1e18) succeeded!`
+      },
+      {
+        num: 6,
+        phase: "Phase 6: Gas Settlement",
+        badge: "Step 6: Gas Refund & Bundler Payout",
+        headline: "EntryPoint settles gas with the Bundler",
+        narrative: "The EntryPoint calculates the actual gas consumed, compensates the Bundler from the account's prefund, and refunds any leftover ETH to MinimalAccount.",
+        activeBoxes: ['entrypoint', 'bundler', 'account'],
+        statuses: { owner: "Complete", bundler: "💰 Reimbursed for gas + fee", entrypoint: "Settled", account: "Balance: 1 USDC" },
+        code: `// EntryPoint reimburses Bundler:
+uint256 gasUsed = startGas - gasleft();
+payable(beneficiary).transfer(gasUsed * maxFeePerGas);
+// Any unspent prefund stays deposited in EntryPoint for MinimalAccount`
+      }
+    ];
+
+    function renderStep() {
+      const step = simSteps[currentStep - 1];
+      document.getElementById('current-step-num').innerText = step.num;
+      document.getElementById('step-indicator').innerText = step.phase;
+      document.getElementById('step-badge').innerText = step.badge;
+      document.getElementById('step-headline').innerText = step.headline;
+      document.getElementById('step-narrative').innerHTML = step.narrative;
+      document.getElementById('step-code-preview').innerText = step.code;
+
+      // Update boxes
+      ['owner', 'bundler', 'entrypoint', 'account'].forEach(name => {
+        const box = document.getElementById('box-' + name);
+        const status = document.getElementById(name + '-status');
+        status.innerText = step.statuses[name];
+
+        if (step.activeBoxes.includes(name)) {
+          box.className = "p-4 rounded-xl bg-slate-900 border-2 border-cyan-500 shadow-lg shadow-cyan-500/20 transition-all flex flex-col items-center text-center transform scale-[1.02]";
+          status.className = "mt-3 text-[10px] px-2.5 py-1 rounded bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-500/30";
+        } else {
+          box.className = "p-4 rounded-xl bg-slate-900/60 border-2 border-slate-800 transition-all flex flex-col items-center text-center opacity-70";
+          status.className = "mt-3 text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-400";
+        }
+      });
+    }
+
+    function nextStep() {
+      if (currentStep < simSteps.length) {
+        currentStep++;
+        renderStep();
+      }
+    }
+
+    function prevStep() {
+      if (currentStep > 1) {
+        currentStep--;
+        renderStep();
+      }
+    }
+
+    function resetSim() {
+      currentStep = 1;
+      renderStep();
+    }
+
+    // Initialize Simulator
+    renderStep();
+  </script>
+</body>
+</html>
+
