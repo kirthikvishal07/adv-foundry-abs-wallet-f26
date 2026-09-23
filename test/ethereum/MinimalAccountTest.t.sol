@@ -120,5 +120,7 @@ contract MinimalAccountTest is Test {
         //assert
         assertEq(usdc.balanceOf(address(minimalAccount)), AMOUNT);
     }
+    function testMeowGoesTheMoon() public {
+    }
         
 }
