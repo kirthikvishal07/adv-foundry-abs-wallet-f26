@@ -8,10 +8,11 @@ remappings = ['@openzeppelin/contracts=lib/openzeppelin-contracts/contracts']
 
 via-ir = true
 optimizer = true
+is-system = true
 
 fs_permissions = [
     { access = "read", path = "./broadcast" },
     { access = "read", path = "./reports" },
 ]
 
-[profile.default.zksync]
+# [profile.default.zksync]

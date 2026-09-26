@@ -56,7 +56,7 @@
 //     }
 
 //     function testRecoverSignedOp() public  {
-//         //arrange 
+//         //arrange
 //         assertEq(usdc.balanceOf(address(minimalAccount)), 0);
 //         address dest = address(usdc);
 //         uint256 value = 0;
@@ -64,10 +64,10 @@
 //         bytes memory executeCallData = abi.encodeWithSelector(MinimalAccount.execute.selector,dest,value,functionData);
 //         PackedUserOperation memory packedUserOp = sendPackedUserOp.generatedSignedUserOperation(executeCallData,helperConfig.getConfig(),address(minimalAccount));
 //         bytes32 userOperationHash = IEntryPoint(helperConfig.getConfig().entryPoint).getUserOpHash(packedUserOp);
-//         //act 
+//         //act
 //         address actualSigner = ECDSA.recover(userOperationHash.toEthSignedMessageHash(),packedUserOp.signature);
-        
-//         //assert 20:00 
+
+//         //assert 20:00
 //         assertEq(actualSigner,minimalAccount.owner());
 //     }
 
@@ -75,7 +75,7 @@
 //     //2 CALL VALIDATE USRE OPS
 //     //3 ASSERT THE RETURN IS CORRECT
 //     function testValidationOfUserOps() public{
-//         //arrange 
+//         //arrange
 //         assertEq(usdc.balanceOf(address(minimalAccount)), 0);
 //         address dest = address(usdc);
 //         uint256 value = 0;
@@ -88,12 +88,12 @@
 //         vm.prank(helperConfig.getConfig().entryPoint);
 //         uint256 validationData = minimalAccount.validateUserOp(packedUserOp,userOperationHash,missingAccountFunds);
 
-//         //act 
+//         //act
 //         assertEq(validationData,0);
 //     }
 
 //     function testEntryPointCanExecuteCommands() public {
-//         //arrange 
+//         //arrange
 //         assertEq(usdc.balanceOf(address(minimalAccount)), 0);
 //         address dest = address(usdc);
 //         uint256 value = 0;
@@ -107,7 +107,6 @@
 //         PackedUserOperation[] memory ops = new PackedUserOperation[](1);
 //         ops[0] = packedUserOp;
 
-
 //         //act
 //         // vm.startPrank(randomUser);
 //         // IEntryPoint(helperConfig.getConfig().entryPoint).handleOps(ops,payable(randomUser));
@@ -119,5 +118,5 @@
 
 //         //assert
 //         assertEq(usdc.balanceOf(address(minimalAccount)), AMOUNT);
-//     }        
+//     }
 // }

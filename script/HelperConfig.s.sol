@@ -63,6 +63,4 @@ contract HelperConfig is Script {
         localNetworkConfig = NetworkConfig({entryPoint: address(entryPoint), account: ANVIL_DEFAULT_WALLET});
         return localNetworkConfig;
     }
-
-    
 }
