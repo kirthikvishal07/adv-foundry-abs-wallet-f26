@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>zkSync ACCOUNT_VALIDATION_SUCCESS_MAGIC Flow Visualizer</title>
+  <style>
+    :root {
+      --bg: #070a13;
+      --card-bg: #0f172a;
+      --card-inner: #090e1a;
+      --border: #1e293b;
+      --border-bright: #334155;
+      --cyan: #06b6d4;
+      --cyan-glow: rgba(6, 182, 212, 0.4);
+      --purple: #a855f7;
+      --purple-glow: rgba(168, 85, 247, 0.45);
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.3);
+      --rose: #f43f5e;
+      --rose-glow: rgba(244, 63, 94, 0.35);
+      --amber: #f59e0b;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem;
+      line-height: 1.5;
+    }
+
+    /* Header */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .badges {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.5rem;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .badge-purple {
+      background: rgba(168, 85, 247, 0.12);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+    .badge-cyan {
+      background: rgba(6, 182, 212, 0.12);
+      color: #38bdf8;
+      border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+
+    h1 {
+      font-size: 1.85rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #c084fc 0%, #38bdf8 50%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.25rem;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    /* Controls */
+    .controls-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .toggle-group {
+      background: #090e1a;
+      border: 1px solid var(--border);
+      padding: 0.25rem;
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.8rem;
+    }
+
+    .toggle-label {
+      color: var(--text-dim);
+      padding: 0 0.5rem;
+      font-weight: 600;
+    }
+
+    button {
+      cursor: pointer;
+      font-family: inherit;
+      border: none;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-toggle {
+      padding: 0.4rem 0.85rem;
+      border-radius: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: transparent;
+    }
+    .btn-toggle.active-valid {
+      background: var(--emerald);
+      color: #fff;
+      box-shadow: 0 0 12px var(--emerald-glow);
+    }
+    .btn-toggle.active-invalid {
+      background: var(--rose);
+      color: #fff;
+      box-shadow: 0 0 12px var(--rose-glow);
+    }
+
+    .btn-download {
+      background: #7c3aed;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 0.75rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+    }
+    .btn-download:hover {
+      background: #6d28d9;
+      transform: translateY(-1px);
+    }
+
+    /* Stepper Bar */
+    .stepper-bar {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 0.85rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stepper-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-step {
+      background: #1e293b;
+      color: #fff;
+      border: 1px solid var(--border-bright);
+      padding: 0.45rem 0.9rem;
+      border-radius: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .btn-step:hover {
+      background: #334155;
+    }
+    .btn-step-primary {
+      background: #0284c7;
+      border-color: #38bdf8;
+    }
+    .btn-step-primary:hover {
+      background: #0369a1;
+    }
+
+    .step-counter {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      font-family: ui-monospace, monospace;
+      margin-left: 0.5rem;
+    }
+    .step-counter-val {
+      color: var(--cyan);
+      font-weight: 800;
+      font-size: 1.05rem;
+    }
+
+    .phase-badge {
+      background: rgba(168, 85, 247, 0.15);
+      color: #d8b4fe;
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    /* 6 Nodes Highway */
+    .nodes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (min-width: 1200px) {
+      .nodes-grid {
+        grid-template-columns: repeat(6, 1fr);
+      }
+    }
+
+    .node-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 0.85rem;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 165px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .node-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .node-num {
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 9999px;
+      background: #1e293b;
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.75rem;
+    }
+
+    .node-address {
+      font-size: 0.65rem;
+      font-family: ui-monospace, monospace;
+      color: var(--text-dim);
+    }
+
+    .node-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.25rem;
+    }
+
+    .node-desc {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    .node-status {
+      margin-top: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.35rem;
+      font-size: 0.68rem;
+      font-family: ui-monospace, monospace;
+      text-align: center;
+      background: #090e1a;
+      color: var(--text-dim);
+      border: 1px solid transparent;
+    }
+
+    /* Node States */
+    .node-card.completed {
+      border-color: rgba(16, 185, 129, 0.6);
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);
+    }
+    .node-card.completed .node-status {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .node-card.active {
+      transform: translateY(-4px) scale(1.02);
+      border-color: var(--cyan);
+      box-shadow: 0 0 25px var(--cyan-glow);
+    }
+    .node-card.active .node-status {
+      background: rgba(6, 182, 212, 0.2);
+      color: #38bdf8;
+      font-weight: 700;
+      border-color: rgba(6, 182, 212, 0.5);
+    }
+
+    .node-card.active-magic {
+      transform: translateY(-4px) scale(1.02);
+      border-color: #c084fc;
+      box-shadow: 0 0 35px var(--purple-glow);
+      animation: magicPulse 2s infinite alternate;
+    }
+    .node-card.active-magic .node-status {
+      background: rgba(168, 85, 247, 0.25);
+      color: #e9d5ff;
+      font-weight: 700;
+      border-color: rgba(168, 85, 247, 0.6);
+    }
+
+    .node-card.active-invalid {
+      transform: translateY(-4px) scale(1.02);
+      border-color: var(--rose);
+      box-shadow: 0 0 25px var(--rose-glow);
+    }
+    .node-card.active-invalid .node-status {
+      background: rgba(244, 63, 94, 0.2);
+      color: #fda4af;
+      font-weight: 700;
+      border-color: rgba(244, 63, 94, 0.5);
+    }
+
+    @keyframes magicPulse {
+      0% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.3); border-color: #a855f7; }
+      100% { box-shadow: 0 0 45px rgba(6, 182, 212, 0.5); border-color: #38bdf8; }
+    }
+
+    /* Deep Dive Split Section */
+    .deep-dive {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (min-width: 992px) {
+      .deep-dive {
+        grid-template-columns: 7fr 5fr;
+      }
+    }
+
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .panel-tag {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.35rem;
+      background: rgba(6, 182, 212, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      display: inline-block;
+      margin-bottom: 0.5rem;
+    }
+
+    .panel-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.6rem;
+    }
+
+    .panel-desc {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      line-height: 1.55;
+      margin-bottom: 1.2rem;
+    }
+
+    .callout-box {
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .callout-box p {
+      line-height: 1.45;
+    }
+
+    .panel-footer {
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+      margin-top: 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    .magic-current-display {
+      font-family: ui-monospace, monospace;
+      font-weight: 700;
+      color: var(--cyan);
+      font-size: 0.95rem;
+    }
+
+    /* Code Panel */
+    .code-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .code-badge-live {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: #34d399;
+      font-weight: 600;
+    }
+    .dot-live {
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 9999px;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    pre code {
+      display: block;
+      background: #050811;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.15rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      color: #6ee7b7;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    /* Educational 3-Card Footer */
+    .edu-section {
+      background: linear-gradient(135deg, rgba(88, 28, 135, 0.2) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(6, 78, 59, 0.2) 100%);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .edu-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .edu-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    @media (min-width: 768px) {
+      .edu-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .edu-card {
+      background: rgba(9, 14, 26, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1rem;
+    }
+
+    .edu-card h4 {
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+    .edu-card p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    code {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 0.15rem 0.35rem;
+      border-radius: 0.3rem;
+      font-family: ui-monospace, monospace;
+      font-size: 0.85em;
+      color: #7dd3fc;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div>
+      <div class="badges">
+        <span class="badge badge-purple">zkSync Era Native AA</span>
+        <span class="badge badge-cyan">bytes4 = 0x2720d20d</span>
+      </div>
+      <h1>The Journey of ACCOUNT_VALIDATION_SUCCESS_MAGIC</h1>
+      <p class="subtitle">
+        How zkSync Era's Native Account Abstraction populates, validates, and verifies the 4-byte magic selector.
+      </p>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-wrapper">
+      <div class="toggle-group">
+        <span class="toggle-label">Signer Mode:</span>
+        <button id="btn-scenario-valid" onclick="setScenario(true)" class="btn-toggle active-valid">
+          Valid Signer (Owner)
+        </button>
+        <button id="btn-scenario-invalid" onclick="setScenario(false)" class="btn-toggle">
+          Attacker / Invalid
+        </button>
+      </div>
+
+      <button onclick="downloadHTML()" class="btn-download" title="Download standalone HTML file">
+        <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+        </svg>
+        Download HTML
+      </button>
+    </div>
+  </header>
+
+  <!-- Interactive Stepper -->
+  <div class="stepper-bar">
+    <div class="stepper-nav">
+      <button onclick="prevStep()" class="btn-step">◀ Previous</button>
+      <button onclick="nextStep()" class="btn-step btn-step-primary">Next Step ▶</button>
+      <button onclick="toggleAutoPlay()" id="btn-autoplay" class="btn-step" style="color: #c084fc; border-color: rgba(168,85,247,0.4);">
+        ▶ Auto-Play
+      </button>
+      <span class="step-counter">
+        Step <span id="current-step-display" class="step-counter-val">1</span> / 6
+      </span>
+    </div>
+
+    <div id="step-badge" class="phase-badge">
+      Phase: Bootloader Calling Account
+    </div>
+  </div>
+
+  <!-- The 6 Animated Stage Cards -->
+  <div class="nodes-grid">
+    
+    <!-- Node 1 -->
+    <div id="node-1" class="node-card">
+      <div>
+        <div class="node-header">
+          <span class="node-num">1</span>
+          <span class="node-address">0x8001</span>
+        </div>
+        <div class="node-title">Bootloader</div>
+        <div class="node-desc">Calls validateTransaction() on your smart account.</div>
+      </div>
+      <div id="status-1" class="node-status">Ready</div>
+    </div>
+
+    <!-- Node 2 -->
+    <div id="node-2" class="node-card">
+      <div>
+        <div class="node-header">
+          <span class="node-num">2</span>
+          <span class="node-address">0x8003</span>
+        </div>
+        <div class="node-title">NonceHolder</div>
+        <div class="node-desc">Increments nonce via systemCallWithPropagatedRevert.</div>
+      </div>
+      <div id="status-2" class="node-status">Waiting</div>
+    </div>
+
+    <!-- Node 3 -->
+    <div id="node-3" class="node-card">
+      <div>
+        <div class="node-header">
+          <span class="node-num">3</span>
+          <span class="node-address">Balance Check</span>
+        </div>
+        <div class="node-title">Fee Solvency</div>
+        <div class="node-desc">Ensures balance >= totalRequiredBalance.</div>
+      </div>
+      <div id="status-3" class="node-status">Waiting</div>
+    </div>
+
+    <!-- Node 4 -->
+    <div id="node-4" class="node-card">
+      <div>
+        <div class="node-header">
+          <span class="node-num">4</span>
+          <span class="node-address">ECDSA</span>
+        </div>
+        <div class="node-title">Recover Signer</div>
+        <div class="node-desc">tx.encodeHash() + ECDSA.recover(txHash, sig).</div>
+      </div>
+      <div id="status-4" class="node-status">Waiting</div>
+    </div>
+
+    <!-- Node 5 -->
+    <div id="node-5" class="node-card">
+      <div>
+        <div class="node-header">
+          <span class="node-num" style="color: #c084fc;">5</span>
+          <span class="node-address" style="color: #c084fc; font-weight:700;">THE MAGIC GATE</span>
+        </div>
+        <div class="node-title" style="color: #d8b4fe;">Assign `magic`</div>
+        <div class="node-desc">If valid: SUCCESS_MAGIC.<br>If invalid: bytes4(0).</div>
+      </div>
+      <div id="status-5" class="node-status">Waiting</div>
+    </div>
+
+    <!-- Node 6 -->
+    <div id="node-6" class="node-card">
+      <div>
+        <div class="node-header">
+          <span class="node-num">6</span>
+          <span class="node-address">0x8001 Verify</span>
+        </div>
+        <div class="node-title">Bootloader Check</div>
+        <div class="node-desc">Verifies magic == 0x2720d20d. Proceeds to execute!</div>
+      </div>
+      <div id="status-6" class="node-status">Waiting</div>
+    </div>
+
+  </div>
+
+  <!-- Detailed Step Spotlight & Code Viewer -->
+  <div class="deep-dive">
+    
+    <!-- Narrative Panel -->
+    <div class="panel">
+      <div>
+        <span id="spotlight-step-tag" class="panel-tag">Step 1 of 6</span>
+        <h2 id="spotlight-title" class="panel-title">Bootloader Invokes validateTransaction</h2>
+        <p id="spotlight-desc" class="panel-desc">
+          The zkSync Bootloader receives the transaction and calls <code>validateTransaction(...)</code> on the smart account.
+        </p>
+
+        <div id="spotlight-callout" class="callout-box">
+          <!-- Dynamic Callout Items -->
+        </div>
+      </div>
+
+      <div class="panel-footer">
+        <span>File: <code style="color: #c084fc;">src/zksync/ZkMinimalAccount.sol</code></span>
+        <span id="current-magic-val" class="magic-current-display">magic = (not yet assigned)</span>
+      </div>
+    </div>
+
+    <!-- Solidity Code Panel -->
+    <div class="panel">
+      <div>
+        <div class="code-panel-header">
+          <span class="code-badge-live">
+            <span class="dot-live"></span> Active Code Slice
+          </span>
+          <span id="code-file-label" style="font-family: ui-monospace, monospace;">ZkMinimalAccount.sol</span>
+        </div>
+        <pre><code id="spotlight-code">// Code loading...</code></pre>
+      </div>
+
+      <div class="panel-footer" style="justify-content: flex-end;">
+        <span style="font-size: 0.72rem; color: #64748b;">Runs in zkSync Era VM</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Educational Explanations -->
+  <div class="edu-section">
+    <div class="edu-title">
+      <span>💡</span> Why does zkSync use a "Magic Value" instead of a boolean (<code>true / false</code>)?
+    </div>
+    <div class="edu-grid">
+      <div class="edu-card">
+        <h4 style="color: #38bdf8;">1. Prevents Accidental Returns</h4>
+        <p>
+          In EVM memory, empty/uninitialized memory defaults to <code>0</code>, and standard fallback handlers often return <code>1 (true)</code>. A specific 4-byte selector (<code>0x2720d20d</code>) cannot be faked or returned by accident.
+        </p>
+      </div>
+      <div class="edu-card">
+        <h4 style="color: #c084fc;">2. Follows EIP-1271 Standard</h4>
+        <p>
+          Similar to how <code>isValidSignature</code> in EIP-1271 returns <code>0x1626ba7e</code>, zkSync requires smart accounts to return their own function selector to explicitly prove adherence to the <code>IAccount</code> interface.
+        </p>
+      </div>
+      <div class="edu-card">
+        <h4 style="color: #34d399;">3. What is the Exact Value?</h4>
+        <p>
+          <code>IAccount.validateTransaction.selector</code> is the first 4 bytes of <code>keccak256("validateTransaction(bytes32,bytes32,(...))")</code>:<br>
+          <code style="color: #38bdf8; display: inline-block; margin-top: 0.35rem; font-weight:700;">0x2720d20d</code>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script Logic -->
+  <script>
+    let currentStep = 1;
+    let isValidScenario = true;
+    let autoPlayTimer = null;
+
+    const stepsData = [
+      {
+        step: 1,
+        phase: "Phase 1: Bootloader Initiation",
+        title: "Bootloader Calls validateTransaction()",
+        desc: "The transaction lifecycle begins when the zkSync Bootloader (formal address 0x0000000000000000000000000000000000008001) calls validateTransaction() on your ZkMinimalAccount contract.",
+        file: "src/zksync/ZkMinimalAccount.sol (Lines 63-70)",
+        code: `function validateTransaction(
+    bytes32 _txHash,
+    bytes32 _suggestedSignedHash,
+    Transaction calldata _transaction
+) external payable requiredFromBootLoader returns (bytes4 magic) {
+    return _validateTransaction(_transaction);
+}`,
+        callout: [
+          "• <b>Security Gate:</b> The <code>requiredFromBootLoader</code> modifier guarantees that ONLY the formal Bootloader address (<code>0x8001</code>) can trigger this function.",
+          "• <b>Return Type:</b> The function specifies <code>returns (bytes4 magic)</code>. This 4-byte slot is what will be returned to the protocol."
+        ],
+        magicState: "magic = (not yet assigned)"
+      },
+      {
+        step: 2,
+        phase: "Phase 2: Nonce Protection",
+        title: "System Contract Increments Account Nonce",
+        desc: "To guarantee replay protection, ZkMinimalAccount calls the NonceHolder system contract (0x8003) via systemCallWithPropagatedRevert.",
+        file: "src/zksync/ZkMinimalAccount.sol (Lines 118-123)",
+        code: `SystemContractsCaller.systemCallWithPropagatedRevert(
+    uint32(gasleft()),
+    address(NONCE_HOLDER_SYSTEM_CONTRACT),
+    0,
+    abi.encodeCall(INonceHolder.incrementMinNonceIfEquals, (_transaction.nonce))
+);`,
+        callout: [
+          "• <b>Native Protocol Integration:</b> In zkSync, nonces are stored globally in the <code>NonceHolder</code> system contract (0x8003), not in account storage.",
+          "• <b>Replay Defense:</b> If the transaction nonce has already been used, <code>incrementMinNonceIfEquals</code> immediately reverts the transaction."
+        ],
+        magicState: "magic = (not yet assigned)"
+      },
+      {
+        step: 3,
+        phase: "Phase 3: Gas Solvency Check",
+        title: "Verify Wallet Can Pay The Bootloader",
+        desc: "The wallet calculates the maximum fee needed for the transaction using _transaction.totalRequiredBalance() and checks its own ETH balance.",
+        file: "src/zksync/ZkMinimalAccount.sol (Lines 125-128)",
+        code: `uint256 totalRequiredBalance = _transaction.totalRequiredBalance();
+if (totalRequiredBalance > address(this).balance) {
+    revert ZkMinimalAccount__NotEnoughBalance();
+}`,
+        callout: [
+          "• <b>Solvency Guarantee:</b> zkSync guarantees the Bootloader won't do uncompensated work.",
+          "• <b>Sufficient Balance:</b> If the account does not hold enough ETH to pay for the gas limit, it reverts with <code>ZkMinimalAccount__NotEnoughBalance()</code>."
+        ],
+        magicState: "magic = (not yet assigned)"
+      },
+      {
+        step: 4,
+        phase: "Phase 4: Cryptographic Recovery",
+        title: "EIP-712 Hash & ECDSA Signer Recovery",
+        desc: "The transaction fields are packed into an EIP-712 hash with _transaction.encodeHash(). ECDSA.recover retrieves the public key address of the signer.",
+        file: "src/zksync/ZkMinimalAccount.sol (Lines 130-132)",
+        code: `bytes32 txHash = _transaction.encodeHash();
+address signer = ECDSA.recover(txHash, _transaction.signature);
+bool isValidSigner = signer == owner();`,
+        callout: [
+          "• <b>encodeHash():</b> Uses zkSync's MemoryTransactionHelper to hash the type 113 (0x71) transaction.",
+          "• <b>ECDSA.recover:</b> Math extracts who actually signed the transaction with their private key.",
+          "• <b>Signer Check:</b> Compares recovered address with <code>owner()</code> (Ownable)."
+        ],
+        magicState: "magic = (evaluating signer...)"
+      },
+      {
+        step: 5,
+        phase: "Phase 5: Populating the Magic Value",
+        title: "Assigning ACCOUNT_VALIDATION_SUCCESS_MAGIC",
+        desc: "HERE IS WHERE MAGIC GETS POPULATED! If the signer is the wallet owner, magic is assigned the exact 4-byte selector. Otherwise, it is assigned 0x00000000.",
+        file: "src/zksync/ZkMinimalAccount.sol (Lines 133-138)",
+        code: `if (isValidSigner) {
+    magic = ACCOUNT_VALIDATION_SUCCESS_MAGIC; // 0x2720d20d
+} else {
+    magic = bytes4(0);                       // 0x00000000
+}
+return magic;`,
+        callout: [
+          "• <b>Definition in IAccount.sol:</b> <code>bytes4 constant ACCOUNT_VALIDATION_SUCCESS_MAGIC = IAccount.validateTransaction.selector;</code>",
+          "• <b>Success Branch:</b> If <code>isValidSigner == true</code>, it populates <code>0x2720d20d</code>.",
+          "• <b>Failure Branch:</b> If an unauthorized party signed it, it returns <code>bytes4(0)</code>."
+        ],
+        magicState: "magic = ACCOUNT_VALIDATION_SUCCESS_MAGIC (0x2720d20d)"
+      },
+      {
+        step: 6,
+        phase: "Phase 6: Bootloader Handshake & Execution",
+        title: "Bootloader Validates Magic & Proceeds",
+        desc: "The Bootloader receives the return data from validateTransaction. It verifies that magic equals ACCOUNT_VALIDATION_SUCCESS_MAGIC.",
+        file: "test/zksync/ZkMinimalAccountTest.t.sol (Lines 74-78)",
+        code: `// Test verification:
+vm.prank(BOOTLOADER_FORMAL_ADDRESS);
+bytes4 magic = minimalAccount.validateTransaction(EMPTY_BYTES32, EMPTY_BYTES32, transaction);
+
+assertEq(magic, ACCOUNT_VALIDATION_SUCCESS_MAGIC);
+// Bootloader now calls payForTransaction() and executeTransaction()!`,
+        callout: [
+          "• <b>Assertion Check:</b> <code>assertEq(magic, ACCOUNT_VALIDATION_SUCCESS_MAGIC)</code> passes cleanly!",
+          "• <b>Execution Phase:</b> With validation confirmed, the bootloader proceeds to call <code>executeTransaction()</code> to mint tokens, transfer funds, or call target contracts."
+        ],
+        magicState: "VERIFIED: 0x2720d20d == 0x2720d20d ✅"
+      }
+    ];
+
+    function setScenario(valid) {
+      isValidScenario = valid;
+      document.getElementById('btn-scenario-valid').className = valid 
+        ? "btn-toggle active-valid" 
+        : "btn-toggle";
+
+      document.getElementById('btn-scenario-invalid').className = !valid 
+        ? "btn-toggle active-invalid" 
+        : "btn-toggle";
+
+      render();
+    }
+
+    function render() {
+      const data = stepsData[currentStep - 1];
+
+      document.getElementById('current-step-display').innerText = data.step;
+      document.getElementById('step-badge').innerText = data.phase;
+      document.getElementById('spotlight-step-tag').innerText = `Step ${data.step} of 6`;
+      document.getElementById('spotlight-title').innerText = data.title;
+      document.getElementById('spotlight-desc').innerHTML = data.desc;
+      document.getElementById('code-file-label').innerText = data.file;
+      document.getElementById('spotlight-code').innerText = data.code;
+
+      // Adjust for Invalid scenario on Step 5 and 6
+      if (!isValidScenario && currentStep >= 5) {
+        if (currentStep === 5) {
+          document.getElementById('spotlight-title').innerText = "Attacker Detected! magic = bytes4(0)";
+          document.getElementById('spotlight-desc').innerHTML = "Because the signer address does NOT match <code>owner()</code>, <code>isValidSigner</code> is FALSE. The contract explicitly populates <code>magic = bytes4(0)</code>.";
+          document.getElementById('current-magic-val').innerHTML = "<span style='color: #f43f5e; font-weight: bold;'>magic = 0x00000000 (FAILED)</span>";
+        } else if (currentStep === 6) {
+          document.getElementById('spotlight-title').innerText = "Bootloader Rejects Transaction!";
+          document.getElementById('spotlight-desc').innerHTML = "The Bootloader checks: <code>magic != ACCOUNT_VALIDATION_SUCCESS_MAGIC</code>. The transaction is immediately dropped and NO execution takes place!";
+          document.getElementById('current-magic-val').innerHTML = "<span style='color: #f43f5e; font-weight: bold;'>REJECTED: 0x00000000 != 0x2720d20d ❌</span>";
+        }
+      } else {
+        document.getElementById('current-magic-val').innerText = data.magicState;
+      }
+
+      // Render Callout Bullets
+      const calloutBox = document.getElementById('spotlight-callout');
+      calloutBox.innerHTML = '';
+      data.callout.forEach(bullet => {
+        const p = document.createElement('p');
+        p.innerHTML = bullet;
+        calloutBox.appendChild(p);
+      });
+
+      // Update Node Visuals
+      for (let i = 1; i <= 6; i++) {
+        const node = document.getElementById('node-' + i);
+        const status = document.getElementById('status-' + i);
+
+        if (i < currentStep) {
+          node.className = "node-card completed";
+          status.innerText = "Completed ✓";
+        } else if (i === currentStep) {
+          if (!isValidScenario && i >= 5) {
+            node.className = "node-card active-invalid";
+            status.innerText = (i === 5) ? "bytes4(0)" : "REVERTED ❌";
+          } else if (i === 5) {
+            node.className = "node-card active-magic";
+            status.innerText = "✨ 0x2720d20d ✨";
+          } else {
+            node.className = "node-card active";
+            status.innerText = "Processing...";
+          }
+        } else {
+          node.className = "node-card";
+          status.innerText = "Waiting";
+        }
+      }
+    }
+
+    function nextStep() {
+      if (currentStep < 6) {
+        currentStep++;
+        render();
+      } else {
+        if (autoPlayTimer) toggleAutoPlay();
+      }
+    }
+
+    function prevStep() {
+      if (currentStep > 1) {
+        currentStep--;
+        render();
+      }
+    }
+
+    function toggleAutoPlay() {
+      const btn = document.getElementById('btn-autoplay');
+      if (autoPlayTimer) {
+        clearInterval(autoPlayTimer);
+        autoPlayTimer = null;
+        btn.innerText = "▶ Auto-Play";
+        btn.style.background = "#1e293b";
+        btn.style.color = "#c084fc";
+      } else {
+        btn.innerText = "⏸ Pause";
+        btn.style.background = "#7c3aed";
+        btn.style.color = "#fff";
+        if (currentStep === 6) currentStep = 1;
+        render();
+        autoPlayTimer = setInterval(() => {
+          if (currentStep < 6) {
+            nextStep();
+          } else {
+            toggleAutoPlay();
+          }
+        }, 2200);
+      }
+    }
+
+    function downloadHTML() {
+      const fullDoc = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+      const blob = new Blob([fullDoc], { type: "text/html;charset=utf-8" });
+      const dlUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = dlUrl;
+      a.download = "zksync_magic_flow.html";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(dlUrl);
+    }
+
+    // Initialize on load
+    render();
+  </script>
+</body>
+</html>
